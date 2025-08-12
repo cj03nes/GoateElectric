@@ -1,44 +1,112 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { consumeZeropoint, transfer, transactionLog } from "./Zeropoint.sol";
-import { consumeZeropointWifi, zeropointWifiConsumedToDevice, transfer, transactionLog } from  "./ZeropointWifi.sol";
-import { connectDevice , deviceConnected, deviceInformation, accountBalances } from "./Util.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./InstilledInteroperability.sol";
 
-// chain to device
-mapping(chain) => mapping(device => mapping(deviceInformation) ) => deviceConnected;
+contract DeviceConnect is Ownable {
+    InstilledInteroperability public interoperability;
+    uint256 public constant FREE_MODALS = 5;
+    uint256 public constant MODAL_COST = 1 * 10**6; // $1 in USDC (6 decimals)
+    address public revenueRecipient;
 
-//chain to Zeropoint to device
-mapping(chain => mapping(uint256 Zeropoint) => mapping(device => mapping(deviceInformation) ) => zeropointConsumedToDevice;
+    struct Device {
+        string deviceId;
+        bool isActive;
+        uint256 modalCount;
+        uint256 batterCapacity; // Percentage (0-100)
+        bool isCharging;
+    }
 
-//chain to ZeropointWifi to device
-mapping(chain => mapping(uint256 ZeropointWifi) => mapping(device => mapping(deviceInformation) ) => zeropointwifiConsumedToDevice;
 
+    mapping(address => Device[]) public userDevices;
+    mapping(string => bool) public deviceExists;
 
-contract DeviceConnect (public virtual view returns) {
+    event DeviceConnected(address indexed user, string deviceId);
+    event DeviceUpdated(address indexed user, string deviceId, uint256 batteryCapacity, bool isCharging);
 
-msg.sender(connectDevice) = get("modelName", " productName", "serialNumber", "IMEI", "batteryStatus", "batteryLevel", "batteryCapacity", "ipAddress", "phoneWifiMACAddress", "phoneNumber", "Wi-Fi", "APN", "MCC", "MNC", "APN Type", "APN Protocol", "APN roaming protocol", "Turn APN On/Off", "Mobile Network Operator Value", "Bluetooth Tethering" );
-modelName = mapping(Settings < About Phone < Model Name) then return "string";
-productName = mapping(Settings < About Phone < Product Name ) then return "string";
-serialNumber = mapping(Settings < About Phone < Serial Number) then return uint256(number);
-IMEI = mapping(Settings < About Phone < IMEI) then return uint256(number);
-batteryStatus = mapping(Settings < About Phone < Battery Information < Battery Status) then return "string";
-batteryLevel = mapping(Settings < About Phone < Battery Level) then return uint256(number[percent]);
-batteryCapacity = mapping(Settings < About Phone < Battery Capacity) then return uint256(number);
-ipAddress = mapping(Settings < About Phone < Status Information < IP Address) then return "string" && uint256(number);
-phoneWifiMACAddress = mapping(Settings < About Phone < Status Information < Phone Wi-Fi MAC Address) then return "string" && uint256(number);
-phoneNumber = mapping(Settings < About Phone < Phone Number) then return uint256(number);
-Wi-Fi = mapping(Settings < Connections < Wi-Fi < Current network) then return "string &| uint256(number);
-APN = mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < APN) then return "string";
-MCC = mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < MCC) then return 3 digit uint256(number);
-MNC = mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < MNC) then return 3 digit uint256(number);
-APN Type = mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < APN Type) then return "string";
-APN Protocol = mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < APN Protocol) then return "string" && uint256(number);
-APN roaming protocol = mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < APN roaming protocol) then return "string" && uint256(number);
-Turn APN On/Off= mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < Turn APN On/Off) then return "string", require(Turn APN On/Off) == On;
-Mobile Network Operator Value = mapping(Settings < Connections < Mobile Networks < Access Point Names < Edit Access Point < Mobile virtual network operator value) then return "string";
-Bluetooth Tethering = mapping(Settings < Connections < Mobile Hotspot and Tethering < Bluetooth tethering) then return ( on || off); 
-deviceInformation = ("modelName", " productName", "serialNumber", "IMEI", "batteryStatus", "batteryLevel", "batteryCapacity", "ipAddress", "phoneWifiMACAddress", "phoneNumber", "Wi-Fi", "APN", "MCC", "MNC", "APN Type", "APN Protocol", "APN roaming protocol", "Turn APN On/Off", "Mobile Network Operator Value", "Bluetooth Tethering");
-if msg.sender(connectDevice) != get("modelName", " productName", "serialNumber", "IMEI", "batteryStatus", "batteryLevel", "batteryCapacity", "ipAddress", "phoneWifiMACAddress", "phoneNumber", "Wi-Fi", "APN", "MCC", "MNC", "APN Type", "APN Protocol", "APN roaming protocol", "Turn APN On/Off", "Mobile Network Operator Value", "Bluetooth Tethering" ) then return error && revert,
-else if msg.sender(connectDevice) == get("modelName", " productName", "serialNumber", "IMEI", "batteryStatus", "batteryLevel", "batteryCapacity", "ipAddress", "phoneWifiMACAddress", "phoneNumber", "Wi-Fi", "APN", "MCC", "MNC", "APN Type", "APN Protocol", "APN roaming protocol", "Turn APN On/Off", "Mobile Network Operator Value", "Bluetooth Tethering") then return deviceConnected; 
+    constructor(address _interoperability, address initialOwner) Ownable(initialOwner) {
+        interoperability = InstilledInteroperability(_interoperability);
+    }
 
+    function setRevenueRecipient(address recipient) external onlyOwner {
+        revenueRecipient = recipient;
+    }
+
+    function connectDevice(string memory deviceId) external {
+        userDevices[msg.sender].push(Device(deviceId, true, 0, 100, false));
+        emit DeviceConnected(msg.sender, deviceId);
+    }
+
+    function updateDeviceStatus(string memory deviceId, uint256 batteryCapacity, bool isCharging) external {
+        uint256 index = findDeviceIndex(deviceId);
+        Device storage device = userDevices[msg.sender][index];
+        device.batteryCapacity = batteryCapacity;
+        device.isCharging = isCharging;
+        emit DeviceUpdated(msg.sender, deviceId, batteryCapacity, isCharging);
+    }
+
+    function findDeviceIndex(string memory deviceId) internal view returns (uint256) {
+        for (uint256 i = 0; i < userDevices[msg.sender].length; i++) {
+            if (keccak256(abi.encodePacked(userDevices[msg.sender][i].deviceId)) == keccak256(abi.encodePacked(deviceId))) {
+                return i;
+            }
+        }
+        revert("Device not found");
+    }
+
+    function canProvideEnergy(string memory deviceId) external view returns (bool) {
+        uint256 index = findDeviceIndex(deviceId);
+        Device memory device = userDevices[msg.sender][index];
+        return device.batteryCapacity > 96 && device.isCharging;
+    }
+}
+
+    function addDevice(string memory deviceId) external {
+        require(!deviceExists[deviceId], "Device already exists");
+        userDevices[msg.sender].push(Device(deviceId, true, 0));
+        deviceExists[deviceId] = true;
+    }
+
+    function disconnectDevice(string memory deviceId) external {
+        Device[] storage devices = userDevices[msg.sender];
+        for (uint256 i = 0; i < devices.length; i++) {
+            if (keccak256(bytes(devices[i].deviceId)) == keccak256(bytes(deviceId)) && devices[i].isActive) {
+                devices[i].isActive = false;
+                return;
+            }
+        }
+        revert("Device not found or already disconnected");
+    }
+
+    function useModal(string memory deviceId) external {
+        Device[] storage devices = userDevices[msg.sender];
+        for (uint256 i = 0; i < devices.length; i++) {
+            if (keccak256(bytes(devices[i].deviceId)) == keccak256(bytes(deviceId)) && devices[i].isActive) {
+                if (devices[i].modalCount < FREE_MODALS) {
+                    devices[i].modalCount++;
+                } else {
+                    require(revenueRecipient != address(0), "Revenue recipient not set");
+                    interoperability.crossChainTransfer(1, 1, "USDC", MODAL_COST, revenueRecipient);
+                    devices[i].modalCount++;
+                }
+                return;
+            }
+        }
+        revert("Active device not found");
+    }
+
+    function getUserDevices(address user) external view returns (Device[] memory) {
+        return userDevices[user];
+    }
+
+    function isDeviceActive(string memory deviceId) external view returns (bool) {
+        Device[] memory devices = userDevices[msg.sender];
+        for (uint256 i = 0; i < devices.length; i++) {
+            if (keccak256(bytes(devices[i].deviceId)) == keccak256(bytes(deviceId))) {
+                return devices[i].isActive;
+            }
+        }
+        return false;
+    }
 }
