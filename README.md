@@ -1,6 +1,7 @@
 # GoateElectric
 
 DeviceConnect - manage devices, electric vehicles ,and etc digital electronics from a simple interface
+________________________________________________________________________________
 
 Instilled interoperability - connect to multiple blockchains and ecosystems
 ________________________________________________________________________________
