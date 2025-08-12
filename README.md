@@ -3,7 +3,7 @@
 DeviceConnect - manage devices, electric vehicles ,and etc digital electronics from a simple interface
 ________________________________________________________________________________
 
-Instilled interoperability - connect to multiple blockchains and ecosystems
+Instilled interoperability - connect to multiple blockchains, banks, and digital ecosystems
 ________________________________________________________________________________
 
 Zeropoint - digital energy & wireless charging
