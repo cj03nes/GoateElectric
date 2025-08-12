@@ -17,3 +17,4 @@ ________________________________________________________________________________
 
 HomeTeamBets - bet win, lose, or tie for the team with home-field advantage, on sports games around the world
 ________________________________________________________________________________
+GhostGoate - owner permissions, accounts, and reserve management
