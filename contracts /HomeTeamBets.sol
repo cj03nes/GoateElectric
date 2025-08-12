@@ -1,94 +1,155 @@
-pragma solidity ^0.8;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
-import { VerifiedChains, VerifiedTokenAssets } from "../InstilledInteroperability.sol" ; 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "./InstilledInteroperability.sol";
+import "./USDMediator.sol";
 
+contract HomeTeamBets {
+    InstilledInteroperability public interoperability;
+    USDMediator public usdMediator;
+    IERC20 public usdcToken = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+    address public owner;
+    uint256 public totalRevenue;
 
-user flow
-// win , lose or tie ... optional overtime: yes or no
-// deposit yes or deposit no
-// money sits in contract & msg.sender gets a receiptNFT
-// await end of the game && scores
-// sort winners && losers
-// find pro rata of totalPoolAmount - winner[amountBet] = remainder
-// 25% out of remainder to owner , then split the remainder between winners
-// remainder % number of winners = amountToPay;
-// transfer winner[amountDeposited] + amountToPay to msg.sender[winner]
+    enum BetType { Win, Lose, Tie }
 
-createBets
-// get weekly matchups
-// distinguish which one is the home team
-// create bet for the hometeam
-// !deposits, 5 minutes before kickoff
-// get score updates Q1, Q2, halftime, Q3, Q4, End of Regulation
-// start winnerVsLoser and function transferWinnerProRata, 5 minutes after end of regulation for aggregate
+    struct Bet {
+        address bettor;
+        uint256 amount;
+        BetType betType;
+        bool overtime;
+        uint256 timestamp;
+    }
 
-back-end answers
-*/ an aggregate of team && score watchers
-1. bleacher report , https://bleacherreport.com/scores/nfl?from=sub
-2. espn football , https://www.espn.com/nfl/scoreboard
-3. nfl.com , https://www.nfl.com/scores/
-4. fox football , https://www.foxsports.com/scores/nfl
-5. cbs football , https://www.cbssports.com/nfl/scoreboard/
-6.The Athletic, https://www.nytimes.com/athletic/nfl/schedule
+    struct Game {
+        string homeTeam;
+        string awayTeam;
+        uint256 startTime;
+        bool isActive;
+        uint256 totalPool;
+        bool completed;
+        BetType result;
+        bool hadOvertime;
+        mapping(address => Bet) bets;
+        address[] bettors;
+    }
 
-//*
+    mapping(uint256 => Game) public games;
+    mapping(address => mapping(uint256 => bool)) public hasBet;
+    mapping(address => Bet[]) public transactionHistory;
 
+    AggregatorV3Interface public oracle;
+    uint256 public gameCount;
 
-contract HomeTeamBets ={ 
-   (require == VerifiedChain);
-   (require == VerifiedTokenAsset);
+    event BetPlaced(address indexed bettor, uint256 gameId, uint256 amount, BetType betType, bool overtime, uint256 timestamp);
+    event GameStarted(uint256 gameId, uint256 startTime);
+    event GameCompleted(uint256 gameId, BetType result, bool hadOvertime);
+    event WinningsDistributed(address indexed winner, uint256 gameId, uint256 amount);
 
-const receiptNFT ={
+    constructor(address _interoperability, address _usdMediator, address _oracle) {
+        owner = msg.sender;
+        interoperability = InstilledInteroperability(_interoperability);
+        usdMediator = USDMediator(_usdMediator);
+        oracle = AggregatorV3Interface(_oracle);
+    }
 
-name = msg.sender[address];
-homeTeamName = homeTeamName[name];
-homeTeamBet = depositYes || depositNo;
-timestamp = deposit.timestamp[msg.sender]
-}
-   
+    function createGame(string memory _homeTeam, string memory _awayTeam, uint256 _startTime) external {
+        require(msg.sender == owner, "Only owner can create games");
+        require(_startTime > block.timestamp, "Start time must be in the future");
 
-const willTheHometeamWin ={
-   (require == depositYes || depositNo);
-   (require == !depositYes && !depositNo);
-   (!require == wasThereOvertime);
+        Game storage game = games[gameCount];
+        game.homeTeam = _homeTeam;
+        game.awayTeam = _awayTeam;
+        game.startTime = _startTime;
+        game.isActive = true;
+        gameCount++;
 
-   if willTheHometeamWin returns false, then msg.sender = loser;
-   if willTheHometeamWin = true, then msg.sender = winner;
+        emit GameStarted(gameCount - 1, _startTime);
+    }
 
-function depositYes ={ 
+    function placeBet(uint256 _gameId, uint256 _amount, BetType _betType, bool _overtime) external {
+        Game storage game = games[_gameId];
+        require(game.isActive, "Betting closed or game not found");
+        require(block.timestamp < game.startTime - 5 minutes, "Betting closes 5 mins before start");
+        require(!hasBet[msg.sender][_gameId], "One bet per game allowed");
+        require(_amount > 0, "Amount must be greater than 0");
 
-msg.sender[balances] - amountDepositYes = msg.sender[newBalances];
-amountDepositYes + betPool[balance] = betPool[newBalance];
-return msg.sender[receiptNFT];      }
+        require(usdcToken.transferFrom(msg.sender, address(this), _amount), "USDC transfer failed");
 
+        game.bets[msg.sender] = Bet(msg.sender, _amount, _betType, _overtime, block.timestamp);
+        game.bettors.push(msg.sender);
+        game.totalPool += _amount;
+        hasBet[msg.sender][_gameId] = true;
 
-function depositNo ={   
-msg.sender[balances] - amountDepositNo = msg.sender[newBalances];
-amountDepositNo + betPool[balance] = betPool[newBalance];
-return msg.sender[receiptNFT];}  
-}
+        transactionHistory[msg.sender].push(Bet(msg.sender, _amount, _betType, _overtime, block.timestamp));
 
+        emit BetPlaced(msg.sender, _gameId, _amount, _betType, _overtime, block.timestamp);
+    }
 
+    function startGame(uint256 _gameId) external {
+        Game storage game = games[_gameId];
+        require(block.timestamp >= game.startTime, "Game not started yet");
+        require(game.isActive, "Game already started or invalid");
+        game.isActive = false;
+        emit GameStarted(_gameId, game.startTime);
+    }
 
+    function completeGame(uint256 _gameId, BetType _result, bool _hadOvertime) external {
+        require(msg.sender == owner, "Only owner can complete game");
+        Game storage game = games[_gameId];
+        require(!game.isActive && !game.completed, "Game not started or already completed");
 
-await gameResults, then return winnersVsLosers;
-if msg.sender = loser, then return string("SORRY YOU LOST, TRY AGAIN"),
-else if msg.sender = winner, then return function transferProRata;
+        game.completed = true;
+        game.result = _result;
+        game.hadOvertime = _hadOvertime;
 
+        distributeWinnings(_gameId);
+        emit GameCompleted(_gameId, _result, _hadOvertime);
+    }
 
+    function distributeWinnings(uint256 _gameId) internal {
+        Game storage game = games[_gameId];
+        uint256 revenueShare = (game.totalPool * 20) / 100;
+        uint256 winnerPool = game.totalPool - revenueShare;
+        totalRevenue += revenueShare;
 
+        uint256 totalWinningWeight = 0;
+        address[] memory winners = new address[](game.bettors.length);
+        uint256 winnerCount = 0;
 
+        for (uint256 i = 0; i < game.bettors.length; i++) {
+            address bettor = game.bettors[i];
+            Bet memory bet = game.bets[bettor];
+            bool wonMain = bet.betType == game.result;
+            bool wonOvertime = bet.overtime == game.hadOvertime;
 
-const wasThereOvertime ={
+            if (wonMain && wonOvertime) {
+                totalWinningWeight += bet.amount;
+                winners[winnerCount] = bettor;
+                winnerCount++;
+            }
+        }
 
-function depositYesOT ={}
+        for (uint256 i = 0; i < winnerCount; i++) {
+            address winner = winners[i];
+            Bet memory bet = game.bets[winner];
+            uint256 winnerShare = (bet.amount * winnerPool) / totalWinningWeight;
+            usdMediator.transferUSD(winner, winnerShare);
+            transactionHistory[winner].push(Bet(winner, winnerShare, bet.betType, bet.overtime, block.timestamp));
+            emit WinningsDistributed(winner, _gameId, winnerShare);
+        }
+    }
 
+    function withdrawRevenue() external {
+        require(msg.sender == owner, "Only owner can withdraw");
+        uint256 amount = totalRevenue;
+        totalRevenue = 0;
+        interoperability.crossChainTransfer(1, 1, "USDC", amount, interoperability.mediatorAccount());
+    }
 
-function depositNoOT ={}  }
-
-if willTheHometeamWin returns true && wasThereOvertime returns false, then msg.sender = winner;
-if willTheHometeamWin returns true && wasThereOvertime returns true, then msg.sender = winner;
-if willTheHometeamWin returns false && wasThereOvertime returns true, then msg.sender = loser;
-if willTheHometeamWin returns false && wasThereOvertime returns false, then msg.sender = loser;
-   
+    function getTransactionHistory(address user) external view returns (Bet[] memory) {
+        return transactionHistory[user];
+    }
 }
