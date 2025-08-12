@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./USDMediator.sol";
-import "./InstilledInteroperability.sol";
+import "./QuantumInstilledInteroperability.sol";
 import "./TheGoateCard.sol";
 
 contract PayWithCrypto is Ownable {
@@ -21,7 +21,12 @@ contract PayWithCrypto is Ownable {
         usdMediator = USDMediator(_usdMediator);
         interoperability = QuantumInstilledInteroperability(_interoperability);
         goateCard = TheGoateCard(_goateCard);
-        supportedAssets = ['USD', 'PI', 'ZPE', 'ZPP', 'ZPW', 'ZHV', 'GOATE', 'GySt', 'SD', 'ZGI', 'GP', 'zS'];
+        // Align supported assets with QuantumInstilledInteroperability
+        supportedAssets = [
+            "USDC", "ZPE", "ZPW", "ZPP", "GySt", "GOATE", "ZHV", "SD", "ZGI", "GP", "zS",
+            "AQUA", "XLM", "yUSD", "yXLM", "yBTC", "WFM", "TTWO", "BBY", "SFM", "DOLE",
+            "WMT", "AAPL", "T", "VZ", "VVS", "CRO", "PYUSD"
+        ];
     }
 
     // Process crypto payment (online or POS)
@@ -77,11 +82,14 @@ contract PayWithCrypto is Ownable {
 
     // Calculate total USD balance across supported assets
     function calculateTotalBalance(address user) internal view returns (uint256) {
-        uint256 totalBalance = interoperability.activeBalances(user, "USD");
+        uint256 totalBalance = 0;
         for (uint256 i = 0; i < supportedAssets.length; i++) {
             string memory asset = supportedAssets[i];
             if (useForCardPayment[user][asset]) {
-                totalBalance += interoperability.convertAmount(asset, "USD", interoperability.activeBalances(user, asset));
+                uint256 balance = interoperability.activeBalances(user, asset);
+                if (balance > 0) {
+                    totalBalance += interoperability.convertAmount(asset, "USDC", balance);
+                }
             }
         }
         return totalBalance;
@@ -90,26 +98,31 @@ contract PayWithCrypto is Ownable {
     // Process payment by deducting from available balances
     function processPayment(address user, uint256 amount) internal {
         uint256 remaining = amount;
-        if (interoperability.activeBalances(user, "USD") >= remaining) {
-            interoperability.updateBalance(user, "USD", interoperability.activeBalances(user, "USD") - remaining);
+        if (interoperability.activeBalances(user, "USDC") >= remaining) {
+            interoperability.updateBalance(user, "USDC", interoperability.activeBalances(user, "USDC") - remaining);
             remaining = 0;
         } else {
-            remaining -= interoperability.activeBalances(user, "USD");
-            interoperability.updateBalance(user, "USD", 0);
+            remaining -= interoperability.activeBalances(user, "USDC");
+            interoperability.updateBalance(user, "USDC", 0);
             for (uint256 i = 0; i < supportedAssets.length && remaining > 0; i++) {
                 string memory asset = supportedAssets[i];
                 if (useForCardPayment[user][asset]) {
-                    uint256 assetAmount = interoperability.convertAmount("USD", asset, remaining);
-                    if (interoperability.activeBalances(user, asset) >= assetAmount) {
-                        interoperability.updateBalance(user, asset, interoperability.activeBalances(user, asset) - assetAmount);
-                        remaining = 0;
-                    } else {
-                        remaining -= interoperability.convertAmount(asset, "USD", interoperability.activeBalances(user, asset));
-                        interoperability.updateBalance(user, asset, 0);
+                    uint256 assetBalance = interoperability.activeBalances(user, asset);
+                    if (assetBalance > 0) {
+                        uint256 assetAmountInUSDC = interoperability.convertAmount(asset, "USDC", assetBalance);
+                        if (assetAmountInUSDC >= remaining) {
+                            uint256 assetAmountNeeded = interoperability.convertAmount("USDC", asset, remaining);
+                            interoperability.updateBalance(user, asset, assetBalance - assetAmountNeeded);
+                            remaining = 0;
+                        } else {
+                            remaining -= assetAmountInUSDC;
+                            interoperability.updateBalance(user, asset, 0);
+                        }
                     }
                 }
             }
         }
+        require(remaining == 0, "Insufficient funds after processing");
     }
 
     // Verify card details via TheGoateCard contract
@@ -135,6 +148,7 @@ contract PayWithCrypto is Ownable {
 
     // Enable/disable asset for card payments
     function toggleAssetForPayment(address user, string memory asset, bool enabled) external onlyOwner {
+        require(interoperability.isSupportedAsset(asset), "Unsupported asset");
         useForCardPayment[user][asset] = enabled;
     }
 }
