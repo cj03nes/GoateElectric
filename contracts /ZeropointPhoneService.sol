@@ -1,3 +1,17 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract ZeropointPhone is ERC20, Ownable {
+    uint256 public constant SUBSCRIPTION_COST = 100; // 1 $ZPP = 100 units (2 decimals), $5
+    uint256 public constant SUBSCRIPTION_DURATION = 30 days;
+    mapping(address => uint256) public lastSubscriptionTime;
+    address public revenueRecipient;
+
+    constructor(address initialOwner) ERC20("ZeropointPhone", "ZPP") Ownable(initialOwner) {
+        _mint(initialOwner, 1000000 * 10**2); // 1M $ZPP
     }
 
     function decimals() public view virtual override returns (uint8) {
