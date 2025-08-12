@@ -6,13 +6,11 @@ body {
     background: 
         linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
         url('background-image1.jpg') center/cover no-repeat,
-        url('background-image1.jpg') center/cover no-repeat,
-        url('background-image1.jpg') center/cover no-repeat,
-        url('background-image1.jpg') center/cover no-repeat,
-        url('background-image1.jpg') center/cover no-repeat,
-        url('background-image1.jpg') center/cover no-repeat,
-        url('home-bg-clouds.jpg') center/cover no-repeat,
-        url('home-forest.jpg') center/cover no-repeat,
+        url('background-image2.jpg') center/cover no-repeat,
+        url('background-image3.jpg') center/cover no-repeat,
+        url('background-image4.jpg') center/cover no-repeat,
+        url('background-image5.jpg') center/cover no-repeat,
+        url('background-image6.jpg') center/cover no-repeat,
         #918d8d; /* Fallback color */
     background-blend-mode: overlay;
     min-height: 100vh;
