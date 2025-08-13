@@ -23,6 +23,7 @@ contract ZeropointRegenerationBed {
     mapping(address => Patient) public patients;
     mapping(string => bool) public validConditions;
     mapping(address => uint256) public usedZeropoint; // Track Zeropoint drawn per patient
+    mapping(string => string[]) public bodyPartToConditions; // Map body parts to conditions
 
     // Patient data structure
     struct Patient {
@@ -43,10 +44,12 @@ contract ZeropointRegenerationBed {
     event AetherTouchActivated(address indexed patient, uint256 duration);
     event ZeropointDrawn(address indexed patient, uint256 amount);
     event ZeropointReturned(address indexed patient, uint256 amount);
+    event BodyPartSelected(address indexed patient, string bodyPart, string condition);
 
     // Errors
     error Unauthorized();
     error InvalidCondition();
+    error InvalidBodyPart();
     error PatientNotRegistered();
     error BedNotConnected();
     error HealingAlreadyActive();
@@ -68,8 +71,9 @@ contract ZeropointRegenerationBed {
         zeropointContract = IZeropoint(_zeropointContract);
         zeropointShieldContract = IZeropointShield(_zeropointShieldContract);
 
-        // Initialize valid medical conditions
+        // Initialize valid medical conditions and body part mappings
         initializeConditions();
+        initializeBodyPartMappings();
     }
 
     // Initialize valid medical conditions
@@ -79,6 +83,45 @@ contract ZeropointRegenerationBed {
         validConditions["broken-bones"] = true;
         validConditions["concussion"] = true;
         validConditions["alzheimers"] = true;
+    }
+
+    // Initialize body part to condition mappings
+    function initializeBodyPartMappings() internal {
+        bodyPartToConditions["head"].push("concussion");
+        bodyPartToConditions["head"].push("alzheimers");
+        bodyPartToConditions["bones"].push("broken-bones");
+        bodyPartToConditions["pancreas"].push("diabetes");
+        bodyPartToConditions["general"].push("cancer");
+    }
+
+    // Allow patient to select a body part and condition
+    function knownAilments(address patient, string memory bodyPart, string memory condition, uint256 severity, string memory biometricData) external onlyOwner {
+        // Validate body part and condition
+        bool validBodyPart = false;
+        string[] memory conditions = bodyPartToConditions[bodyPart];
+        for (uint256 i = 0; i < conditions.length; i++) {
+            if (keccak256(abi.encodePacked(conditions[i])) == keccak256(abi.encodePacked(condition))) {
+                validBodyPart = true;
+                break;
+            }
+        }
+        if (!validBodyPart) revert InvalidBodyPart();
+        if (!validConditions[condition]) revert InvalidCondition();
+        if (severity > 10) revert InvalidCondition(); // Severity must be 0-10
+
+        // Register patient with selected condition
+        bytes32 biometrics = keccak256(abi.encodePacked(patient, biometricData));
+        patients[patient] = Patient({
+            biometrics: biometrics,
+            condition: condition,
+            severity: severity,
+            startTime: 0,
+            duration: 0,
+            active: false
+        });
+
+        emit PatientRegistered(patient, biometrics, condition, severity);
+        emit BodyPartSelected(patient, bodyPart, condition);
     }
 
     // Connect a regeneration bed
