@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Web3 from 'web3';
 import { ethers } from 'ethers';
-import InstilledInteroperabilityABI from './abis/InstilledInteroperability.json';
-import DeviceConnectABI from './abis/DeviceConnect.json';
+import { addresses, abis } from './contractConfig';
 import './styles.css';
 import logo from './assets/goate-electric-logo.svg'; // Gold goat silhouette
 
@@ -34,8 +33,8 @@ const App = () => {
   const fetchBalances = async (user) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const contract = new ethers.Contract(
-      '0xInstilledInteroperabilityAddress',
-      InstilledInteroperabilityABI,
+      addresses.InstilledInteroperability,
+      abis.InstilledInteroperability,
       provider
     );
     const assets = ['ZPE', 'ZPP', 'ZPW', 'BTC', 'USD', 'PI', 'GOATE', 'ZGI'];
@@ -50,8 +49,8 @@ const App = () => {
   const fetchDevices = async (user) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const contract = new ethers.Contract(
-      '0xDeviceConnectAddress',
-      DeviceConnectABI,
+      addresses.DeviceConnect,
+      abis.DeviceConnect,
       provider.getSigner()
     );
     const deviceList = await contract.getUserDevices(user);
@@ -61,8 +60,8 @@ const App = () => {
   const connectDevice = async (deviceId) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const contract = new ethers.Contract(
-      '0xDeviceConnectAddress',
-      DeviceConnectABI,
+      addresses.DeviceConnect,
+      abis.DeviceConnect,
       provider.getSigner()
     );
     await contract.connectDevice(deviceId);
