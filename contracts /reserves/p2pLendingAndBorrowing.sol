@@ -84,4 +84,4 @@ contract Lending {
         }
         return creditScores[user];
     }
-}cj
+}
