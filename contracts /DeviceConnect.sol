@@ -109,4 +109,19 @@ contract DeviceConnect is Ownable {
         }
         return false;
     }
+
+function consumeForDevice(string memory deviceId, string memory asset, uint256 amount) external {
+    require(deviceExists[deviceId], "Device not found");
+    if (keccak256(bytes(asset)) == keccak256(bytes("ZPE"))) {
+        Zeropoint zpe = Zeropoint(interoperability.tokenMap(1, "ZPE"));
+        zpe.consumeEnergy(msg.sender, amount);
+    } else if (keccak256(bytes(asset)) == keccak256(bytes("ZPW"))) {
+        ZeropointWifi zpw = ZeropointWifi(interoperability.tokenMap(1, "ZPW"));
+        zpw.burn(amount);
+    } else if (keccak256(bytes(asset)) == keccak256(bytes("ZPP"))) {
+        ZeropointPhoneService zpp = ZeropointPhoneService(interoperability.tokenMap(1, "ZPP"));
+        zpp.burn(amount);
+    }
+    emit DeviceUpdated(msg.sender, deviceId, amount, true);
+}
 }
