@@ -4,7 +4,7 @@ import Web3 from 'web3';
 import { ethers } from 'ethers';
 import { addresses, abis } from './contractConfig';
 import './styles.css';
-import logo from './assets/goate-electric-logo.svg'; // Gold goat silhouette
+import logo from './images/GoateElectricLogo.jpg'; 
 
 const App = () => {
   const [web3, setWeb3] = useState(null);
