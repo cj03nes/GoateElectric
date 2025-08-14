@@ -41,4 +41,20 @@ contract USDMediator is Ownable {
     function updatePaymentProcessor(address _newProcessor) external onlyOwner {
         paymentProcessor = _newProcessor;
     }
+function depositUSD(address user, uint256 amount, string memory asset) external {
+    require(isSupportedUSDAsset(asset), "Unsupported USD asset");
+    uint256 ownerAmount = (amount * OWNER_SHARE) / 100;
+    uint256 reserveAmount = (amount * RESERVE_SHARE) / 100;
+    uint256 mediatorAmount = (amount * MEDIATOR_SHARE) / 100;
+    interoperability.updateBalance(user, asset, interoperability.activeBalances(user, asset) + amount);
+    emit RevenueDistributed(revenueOwner, ownerAmount, "Owner");
+    emit RevenueDistributed(reserve, reserveAmount, "Reserve");
+    emit RevenueDistributed(paymentProcessor, mediatorAmount, "Mediator");
+}
+
+function isSupportedUSDAsset(string memory asset) internal pure returns (bool) {
+    return keccak256(bytes(asset)) == keccak256(bytes("USDC")) ||
+           keccak256(bytes(asset)) == keccak256(bytes("USDT")) ||
+           keccak256(bytes(asset)) == keccak256(bytes("USD"));
+}
 }
