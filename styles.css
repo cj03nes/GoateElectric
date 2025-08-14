@@ -2,19 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background-color: #000000;
-  color: #FFD700;
+  background-color: #035096;
+  color: #F9B234;
+
+  font-family: Avenir-Roman, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-.text-gold {
-  color: #FFD700;
+a {
+  color: #F9B234;
+  text-decoration: none;
 }
 
-.bg-gold {
-  background-color: #FFD700;
+@media only screen and (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
 }
+@media only screen and (min-width: 480px) and (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+}
+@media only screen and (max-width: 479px) {
+  body {
+      font-size: 14px;
+  }
 
+  
 .holographic {
   animation: spin 2s linear infinite;
   background: linear-gradient(45deg, #FFD700, #FFFFE0, #FFD700);
@@ -24,4 +49,5 @@ body {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
 }
