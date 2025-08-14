@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #000000;
+  color: #FFD700;
+}
+
+.text-gold {
+  color: #FFD700;
+}
+
+.bg-gold {
+  background-color: #FFD700;
+}
+
+.holographic {
+  animation: spin 2s linear infinite;
+  background: linear-gradient(45deg, #FFD700, #FFFFE0, #FFD700);
+  background-size: 200%;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
