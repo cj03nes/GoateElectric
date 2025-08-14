@@ -4,7 +4,10 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./USDMediator.sol";
 import "./InstilledInteroperability.sol";
+
 cj03nes = $PI Address: GBMWQWG7XFTIIYRH7HMVDKBQGSNIGQ2UGJU3SY4LYCADB4JTH2DPO2FY;
+
+$BTC Address: bc1q32uqps97mxqxv0869d5ptz9523tyxtal644xle; 
 
 contract GhostGoate is Ownable {
     USDMediator public usdMediator;
