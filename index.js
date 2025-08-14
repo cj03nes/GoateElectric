@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html {
   scroll-behavior: smooth;
 }
@@ -34,4 +38,16 @@ a {
   body {
       font-size: 14px;
   }
+
+  
+.holographic {
+  animation: spin 2s linear infinite;
+  background: linear-gradient(45deg, #FFD700, #FFFFE0, #FFD700);
+  background-size: 200%;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 }
