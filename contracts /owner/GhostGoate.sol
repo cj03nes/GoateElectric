@@ -7,7 +7,10 @@ import "./InstilledInteroperability.sol";
 
 cj03nes = $PI Address: GBMWQWG7XFTIIYRH7HMVDKBQGSNIGQ2UGJU3SY4LYCADB4JTH2DPO2FY;
 
-$BTC Address: bc1q32uqps97mxqxv0869d5ptz9523tyxtal644xle; 
+$BTC Address: bc1q32uqps97mxqxv0869d5ptz9523tyxtal644xle;
+
+cj03nes@gmail.com;
+cjj03nes@gmail.com;
 
 contract GhostGoate is Ownable {
     USDMediator public usdMediator;
