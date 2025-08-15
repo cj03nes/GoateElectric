@@ -1,23 +1,33 @@
-# GoateElectric
+markdown
 
-DeviceConnect - manage devices, electric vehicles ,and etc digital electronics from a simple interface
-________________________________________________________________________________
+# Goate Electric
 
-Instilled interoperability - connect to multiple blockchains, banks, and digital ecosystems
-________________________________________________________________________________
+A decentralized application for digital utilities, DeFi, and entertainment.
 
-Zeropoint - digital energy & wireless charging
-________________________________________________________________________________
+## Setup
 
-Zeropoint WiFi - digital WiFi & wireless connectivity
-________________________________________________________________________________
+1. **Install Dependencies**:
+   ```bash
+   npm install
 
-ZeropointPhoneService - affordable phone service
-________________________________________________________________________________
+2. Configure Environment:Create a .env file with contract addresses and Firebase config.
+Example:
 
-TheGoateToken - platform native token & reserve
-________________________________________________________________________________
+REACT_APP_DEVICE_CONNECT_ADDRESS=0x...
+REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/your_infura_key
+PRIVATE_KEY=your_private_key
 
-HomeTeamBets - bet win, lose, or tie for the team with home-field advantage, on sports games around the world
-________________________________________________________________________________
-GhostGoate - owner permissions, accounts, and reserve management
+3. Compile and Deploy Contracts:bash
+
+npx hardhat compile
+npx hardhat run scripts/deploy.js --network sepolia
+
+4. Run Locally:bash
+
+npm start
+
+5.Deploy to Vercel:Push to GitHub: git push origin main
+Configure .env variables in Vercel dashboard.
+Deploy via Vercel CLI or dashboard.
+
