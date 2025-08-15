@@ -1,1 +1,40 @@
-ch
+[
+  {
+    "inputs": [
+      { "internalType": "string", "name": "deviceId", "type": "string" }
+    ],
+    "name": "addDevice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "deviceId", "type": "string" }
+    ],
+    "name": "connectDevice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "user", "type": "address" }
+    ],
+    "name": "getUserDevices",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "string", "name": "deviceId", "type": "string" },
+          { "internalType": "uint256", "name": "batteryCapacity", "type": "uint256" },
+          { "internalType": "bool", "name": "isInsured", "type": "bool" }
+        ],
+        "internalType": "struct DeviceConnect.Device[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
