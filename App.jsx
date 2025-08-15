@@ -4,7 +4,7 @@ import Web3 from 'web3';
 import { ethers } from 'ethers';
 import { addresses, abis } from './contractConfig';
 import './styles.css';
-import logo from './images/GoateElectricLogo.jpg'; 
+import logo from './images/GoateElectricLogo.jpg';
 
 const App = () => {
   const [web3, setWeb3] = useState(null);
@@ -68,6 +68,8 @@ const App = () => {
     fetchDevices(account);
   };
 
+  const timestamp = new Date().toLocaleString();
+
   return (
     <BrowserRouter>
       <div className="bg-black text-gold min-h-screen">
@@ -78,13 +80,13 @@ const App = () => {
           </div>
           <div className="flex space-x-4">
             <button className="bg-gold text-black px-4 py-2 rounded hover:bg-yellow-400">
-              Signup/Login
+              {username} (Signup/Login)
             </button>
             <button
               className="bg-gold text-black px-4 py-2 rounded hover:bg-yellow-400"
               onClick={() => connectDevice(prompt('Enter Device ID'))}
             >
-              Connect Device
+              Connect Device ({devices.length})
             </button>
             <select className="bg-gold text-black px-4 py-2 rounded">
               <option>Settings</option>
@@ -122,6 +124,9 @@ const App = () => {
               Goate Entertainment
             </Link>
           </div>
+          <footer className="text-center mt-8 text-sm">
+            Last Updated: {timestamp}
+          </footer>
         </main>
       </div>
       <Routes>
@@ -131,21 +136,6 @@ const App = () => {
       </Routes>
     </BrowserRouter>
   );
-};
-
-const UtilitiesPage = ({ account, devices, fetchDevices }) => {
-  // Implement device tabs, buy buttons, and device cards as described
-  return <div>Utilities Page (Placeholder)</div>;
-};
-
-const DeFiPage = ({ account, balances }) => {
-  // Implement token sections with buy/sell/transfer/deposit/stake/etc.
-  return <div>DeFi Page (Placeholder)</div>;
-};
-
-const EntertainmentPage = ({ account }) => {
-  // Implement game buttons and auction modals
-  return <div>Entertainment Page (Placeholder)</div>;
 };
 
 export default App;
