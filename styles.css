@@ -2,13 +2,14 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background: #000;
+  background: url('./images/background.jpg') no-repeat center center fixed;
+  background-size: cover;
   color: #f9b234;
   min-height: 100vh;
 }
 
 .bg-black {
-  background: #000;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .text-gold {
@@ -189,6 +190,18 @@ input {
   border: 1px solid #f9b234;
   color: #f9b234;
   background: #1a1a1a;
+}
+
+.loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1a1a1a;
+  color: #f9b234;
+  padding: 20px;
+  border-radius: 5px;
+  z-index: 1000;
 }
 
 @media (min-width: 768px) {
