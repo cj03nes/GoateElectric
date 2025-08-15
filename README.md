@@ -1,33 +1,59 @@
-markdown
+FeaturesUtilities: Device management, service purchasing (ZPE, ZPP, ZPW, ZGI).
+DeFi: Buy, sell, transfer, stake, lend, borrow tokens.
+Entertainment: Play games (CardWars, HomeTeamBets, etc.) and auction NFTs.
+Authentication: Username/password and social logins (Google, Microsoft, X).
+Dynamic Updates: Contract addresses/ABIs updated via ContractRegistry.
+---
 
-# Goate Electric
+### Setup Instructions
+1. **Images**:
+   - **GoateElectricLogo.jpg**: Create a 12x12 pixel gold goat silhouette with electric bolts on a transparent background. Place in `src/images/`.
+   - **background.jpg**: Create a 1920x1080 black-to-gold gradient with subtle lightning bolts. Place in `src/images/`.
 
-A decentralized application for digital utilities, DeFi, and entertainment.
+2. **Firebase Setup**:
+   - Create a Firebase project at `https://console.firebase.google.com`.
+   - Enable Email/Password, Google, Microsoft, and Twitter (X) authentication in the Firebase console.
+   - Update `.env` with Firebase config values.
+   - Install Firebase SDK:
+     ```bash
+     npm install firebase
+     ```
 
-## Setup
+3. **Contract Deployment**:
+   - Install Hardhat:
+     ```bash
+     npm install --save-dev hardhat @nomiclabs/hardhat-ethers dotenv
+     ```
+   - Compile contracts:
+     ```bash
+     npx hardhat compile
+     ```
+   - Deploy to Sepolia:
+     ```bash
+     npx hardhat run scripts/deploy.js --network sepolia
+     ```
+   - Update `.env` with deployed addresses and copy ABI JSON files from `artifacts/contracts/` to `src/abis/`.
 
-1. **Install Dependencies**:
+4. **Contract Registry**:
+   - After deploying `ContractRegistry.sol`, update it with contract addresses:
+     ```javascript
+     const registry = new ethers.Contract(
+       getAddresses().ContractRegistry,
+       getAbis().ContractRegistry,
+       provider.getSigner()
+     );
+     await registry.updateAddress("DeviceConnect", "0x123...");
+     await registry.updateAbi("DeviceConnect", JSON.stringify(require('./abis/DeviceConnect.json')));
+     ```
+   - Repeat for all contracts.
+
+5. **Run Locally**:
    ```bash
-   npm install
+   npm start
 
-2. Configure Environment:Create a .env file with contract addresses and Firebase config.
-Example:
-
-REACT_APP_DEVICE_CONNECT_ADDRESS=0x...
-REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
-SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/your_infura_key
-PRIVATE_KEY=your_private_key
-
-3. Compile and Deploy Contracts:bash
-
-npx hardhat compile
-npx hardhat run scripts/deploy.js --network sepolia
-
-4. Run Locally:bash
-
-npm start
-
-5.Deploy to Vercel:Push to GitHub: git push origin main
+Deploy to Vercel:Push to https://github.com/cj03nes/GoateElectric.
 Configure .env variables in Vercel dashboard.
-Deploy via Vercel CLI or dashboard.
+Deploy via Vercel CLI:bash
+
+vercel
 
