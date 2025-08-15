@@ -1,10 +1,6 @@
-// contractConfig.js
-// Configuration for Goate Electric smart contract addresses and ABIs
-// Loads from environment variables at build time and supports runtime updates
-
 import { ethers } from 'ethers';
 
-// Initial contract addresses from environment variables (build-time)
+// Initial contract addresses from environment variables
 const initialAddresses = {
   DeviceConnect: process.env.REACT_APP_DEVICE_CONNECT_ADDRESS || '0x0000000000000000000000000000000000000000',
   Zeropoint: process.env.REACT_APP_ZEROPOINT_ADDRESS || '0x0000000000000000000000000000000000000000',
@@ -21,9 +17,10 @@ const initialAddresses = {
   GerastyxOpol: process.env.REACT_APP_GERASTYX_OPOL_ADDRESS || '0x0000000000000000000000000000000000000000',
   Spades: process.env.REACT_APP_SPADES_ADDRESS || '0x0000000000000000000000000000000000000000',
   GerastyxPropertyNFT: process.env.REACT_APP_GERASTYX_PROPERTY_NFT_ADDRESS || '0x0000000000000000000000000000000000000000',
+  ContractRegistry: process.env.REACT_APP_CONTRACT_REGISTRY_ADDRESS || '0x0000000000000000000000000000000000000000',
 };
 
-// Initial ABIs from local JSON files (build-time)
+// Initial ABIs from local JSON files
 const initialAbis = {
   DeviceConnect: require('./abis/DeviceConnect.json'),
   Zeropoint: require('./abis/Zeropoint.json'),
@@ -40,40 +37,40 @@ const initialAbis = {
   GerastyxOpol: require('./abis/GerastyxOpol.json'),
   Spades: require('./abis/Spades.json'),
   GerastyxPropertyNFT: require('./abis/GerastyxPropertyNFT.json'),
+  ContractRegistry: require('./abis/ContractRegistry.json'),
 };
 
 // State to hold current addresses and ABIs
 let addresses = { ...initialAddresses };
 let abis = { ...initialAbis };
 
-// Function to update addresses and ABIs at runtime
+// Function to update addresses and ABIs from ContractRegistry
 export const updateContractConfig = async () => {
   try {
-    // Example: Fetch updated addresses/ABIs from a server
-    const response = await fetch('https://api.goateelectric.com/contracts', {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    const data = await response.json();
-
-    // Update addresses if provided
-    if (data.addresses) {
-      addresses = { ...addresses, ...data.addresses };
-    }
-
-    // Update ABIs if provided
-    if (data.abis) {
-      for (const [contract, abi] of Object.entries(data.abis)) {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const registry = new ethers.Contract(
+      initialAddresses.ContractRegistry,
+      initialAbis.ContractRegistry,
+      provider
+    );
+    const contractNames = Object.keys(initialAddresses);
+    for (const name of contractNames) {
+      if (name === 'ContractRegistry') continue;
+      const addr = await registry.getAddress(name);
+      if (addr !== '0x0000000000000000000000000000000000000000') {
+        addresses[name] = addr;
+      }
+      const abi = await registry.getAbi(name);
+      if (abi) {
         try {
-          // Validate ABI
-          ethers.utils.Interface(abi);
-          abis[contract] = abi;
+          ethers.utils.Interface(JSON.parse(abi));
+          abis[name] = JSON.parse(abi);
         } catch (error) {
-          console.error(`Invalid ABI for ${contract}:`, error);
+          console.error(`Invalid ABI for ${name}:`, error);
         }
       }
     }
-
-    console.log('Contract config updated:', addresses, abis);
+    console.log('Contract config updated:', addresses);
   } catch (error) {
     console.error('Failed to update contract config:', error);
   }
@@ -85,9 +82,10 @@ export const getAddresses = () => ({ ...addresses });
 // Function to get current ABIs
 export const getAbis = () => ({ ...abis });
 
-// Initialize with a fetch on load (optional)
+// Initialize with a fetch on load (client-side only)
 if (typeof window !== 'undefined') {
   updateContractConfig();
+  setInterval(updateContractConfig, 60000); // Update every minute
 }
 
 export { addresses, abis };
