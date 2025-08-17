@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { getAddresses, getAbis } from './contractConfig';
 import { toast } from 'react-toastify';
 import logo from './images/GoateElectricLogo.jpg';
+import PriceFeed from './components/PriceFeed';
 
 const DeFiPage = ({ account, balances }) => {
   const [amount, setAmount] = useState('');
@@ -119,6 +120,10 @@ const DeFiPage = ({ account, balances }) => {
       </header>
       {loading && <div className="loading">Loading...</div>}
       <main className="p-4">
+        <PriceFeed 
+          provider={window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null}
+          signer={window.ethereum ? new ethers.providers.Web3Provider(window.ethereum).getSigner() : null}
+        />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {Object.entries(balances).map(([asset, balance]) => (
             <div key={asset} className="bg-gray-900 p-4 rounded text-center">
