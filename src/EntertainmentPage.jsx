@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { getAddresses, getAbis } from './contractConfig';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import logo from './images/GoateElectricLogo.jpg';
 
 const EntertainmentPage = ({ account, balances }) => {
