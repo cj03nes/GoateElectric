@@ -19,7 +19,8 @@ import AI(telepathy);
 
 var msg.sender(AppName);
 var msg.sender(AppDescription);
-var msg.sender(AppLogo);}
+var msg.sender(AppLogo);
+optional var msg.sender(repository);
 
 on.Click(return aiTelepathy){
 get msg.sender(perspective of userCreateApp);
