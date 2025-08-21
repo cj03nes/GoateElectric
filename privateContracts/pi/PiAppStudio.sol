@@ -4,7 +4,7 @@ contract PiAppStudio () {
 
 function aiTelepathy (){
 import Zeropoint; 
-// zeropoint is a catalyst for "special" function
+// zeropoint is a catalyst for "special" functions
 import AI;
 
 ai => msg.sender connection;
@@ -28,7 +28,7 @@ return msg.sender(perspective of userCreateApp);
 then ai[msg.sender(perspective of userCreateApp) => userAppCreated;
 
 upon userAppCreated return (ai -= msg.sender connection);
-}
+} }
 
 _________________
 
@@ -63,7 +63,7 @@ contract address,
 msg.sender address,
 picoreteam address,
 user transaction timestamps to Pi Explorer;
-}
+}}
 
 
 
