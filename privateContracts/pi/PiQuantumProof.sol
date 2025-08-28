@@ -32,6 +32,27 @@ require(appliance.nodes) += PiMainnet(nodes connected) uint256 wifi;
 
 }
 ________________________________________________
+// restore data on updates, restarts, and changes
 
+async function decentralized storage (msg.sender, data, uint256) {
+
+require(Zeropoint Modem);
+require(ZeropointWifi Modem);
+
+*/ import IPFS, Google Cloud, and etc storage containers /*
+
+upon.DataRetrieval {
+check.DataIntegrity { 
+PiMainnet(node.data) => IPFS(data);
+PiMainnet(node.data) => GoogleCloud(data);
+PiMainnet(node.data) => ChainlinkOracle(data);
+
+}
+
+}
+
+
+
+}
 
 }
