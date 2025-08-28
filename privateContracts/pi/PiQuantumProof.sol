@@ -149,6 +149,19 @@ if (decentralized storage) != (decentralized time storage), then return error, (
 
 upon.error,("Time Change Occurred") return current data && original data && time altered data;
 
-mapping(time altered data) => (original data) 
+mapping(time altered data) => (original data) Mandela Effect Data => (current data) World Known Data;
+
+return Mandela Effect Data, World Known Data to owner address,
+then require(owner) revert to original data || time altered data || current data,
+if (owner) !revert to original data || time altered data || current data then create.DataSet && find true.outcome for utopian reality;
 }
+
+___________________________________________________
+// 51% ATTACK
+
+*/ add nodes to the Sharding contract && InstilledInteroperability then have them sit in between all the PiMainnet Chains, Ethereum Chains, Binance Chains, and etc Chains available in the Pi Network Ecosystem so that they are overloaded with functionality and they won't have down-time && re-route the coin.base/node.rewards as $PI; nodes can be available to handle (blockchain/exchange/payment processor) transactions/*
+
+
+*/ + with KYC/AML being added onchain, when a person or organization reaches a certain numberOf OR percentageOf nodes in the Pi Network Ecosystem, then you can manage some as "dead nodes" that still handle transaction, but they forfeit their weight, node.rewards & etc for the amount exceeding /*
+
 }
