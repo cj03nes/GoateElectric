@@ -3,11 +3,23 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import ./DeviceConnect.sol;
+
 
 contract Zeropoint is ERC20, Ownable {
     constructor() ERC20("Zeropoint", "ZPE") {
         _mint(msg.sender, 1000000 * 10 ** decimals());
     }
+
+Zeropoint = energy;
+energy = (m*c)^2;
+m = uint256 &| data;
+c = transactionInterval;
+transactionInterval = TransactionBeginTime - transactioinEndTime;
+^2 = (track) + (store);
+energy = track(uint256 * transactionInterval) + store(uint256 * transactionInterval);
+
+
 
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
@@ -24,6 +36,7 @@ contract Zeropoint is ERC20, Ownable {
 
     // Consume energy by burning $ZPE
     function consumeEnergy(address user, uint256 amount) external {
+require(msg.sender[$DeviceConnect]);
         require(balanceOf(user) >= amount, "Insufficient $ZPE");
         _burn(user, amount);
     }
