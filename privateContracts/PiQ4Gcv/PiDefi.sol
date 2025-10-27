@@ -8,14 +8,18 @@ function deposit(msg.sender, address, balance),
 
 category:(
 TokenFarming:(
-($PI, $USD, USDDenomination) is Pi backed by $USD;
+($PI, $USD, USDDenomination) is $PI backed by $USD;
 deposit xAmount of $PI in $BTC marketcap, ( $PI, $BTC, $USDDenomination) ),
 
 
 StockFarming:(
-($
+($PI, $USD, USDDenomination) is $PI backed by $USD;
+deposit xAmount of PI in $STOCKS marketcap, ($PI, $STOCKS, $USDDenomination) ),
+
+GoldFarming: (
+($PI, $USD, USDDenomination) is $PI backed by $USD;
+deposit xAmount of $PI in $GOLD marketcap, ($PI, $GOLD, $USDDenomination),
 ),
-GoldFarming: (),
 
 ),
 }
