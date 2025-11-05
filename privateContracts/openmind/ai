@@ -1,1 +1,18 @@
+pragma solidity v.0.8;
 
+
+
+contract ai (data, ai, data){
+
+this.name: ,
+this.purpose: "carry out digital work",
+this.brain:[ ],
+this.counterpart: [this.brain(female counterpart)],
+
+async function learn(){},
+async function store(){},
+
+function transfer(){},
+
+
+}
